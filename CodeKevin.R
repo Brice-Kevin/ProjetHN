@@ -1,9 +1,16 @@
-#Web scrapping
+# Web scrapping
 library(tidyverse)
 library(xml2)
 library(rvest)
 library(jsonlite)
 
+# Fonction formatage des accents 
+delete.accent <- function(x) {
+  x <- chartr("éèëêÉÈËÊàÀçÇÏï", "eeeeEEEEaAcCIi", x)
+  return(x)
+}
+
+# Fonction qui permettra faire le boucle pour coller chaque morceau de l'url où nous allos extraire l'information de chaque rubrique   
 collecte.Data <- function(n){
   url.fonction <- paste('https://www.populationdata.net/palmares/',n,'/',sep="")
   pays.fonction <- str_to_upper(delete.accent(read_html(url.fonction) %>% html_nodes('td:nth-child(2)') %>% html_text()))
@@ -11,42 +18,33 @@ collecte.Data <- function(n){
   return(data.frame("Pays"=pays.fonction,"Info"=info.fonction))
 }
 
-delete.accent <- function(x) {
-  x <- gsub("[`^~\"]", " ", x)
-  x <- iconv(x, to="ASCII//TRANSLIT//IGNORE")
-  x <- gsub("[`^~\"]", "", x)
-  return(x)
-}
-
-delete.accent("� � � � �")
-
+# Récuperation du pays et continents qui permettron construire la dataframe qui fera la jointure avec la dataframe de la fonction collecte.Data
 url <- "https://www.populationdata.net/palmares/esperance-de-vie/"
 pays <- str_to_upper(delete.accent(read_html(url) %>% html_nodes('td:nth-child(2)') %>% html_text()))
 continent <- str_to_upper(delete.accent(read_html(url) %>% html_nodes('td:nth-child(3)') %>% html_text()))
 information.pays <- data.frame("Pays"=pays,"Continent"=continent)
 
+# Vecteur qui contiendra chaque morceau d'url passant comme paramètre de la fonction collecte.Data  pour construire l'url de chaque rubrique
 table_name <- c("esperance-de-vie","mortalite-infantile","ipe","mortalite","tourisme",
                 "pib-par-habitant","natalite","population")
-
+# Boucle pour parcourir le vector et avoir l'index de la fonction collecte.Data
 for(i in table_name)
+  # Jointure entre la première dataframe qui contient le pays et le continant avec la dataframe qui donne la fonction collecte.Data en utilisant l'index de la boucle précédente 
   information.pays <- merge(information.pays,collecte.Data(i),by.x = "Pays", by.y = "Pays", all = TRUE)
-
-# r�cuperation pays et capitals 
-url <- "https://jeretiens.net/tous-les-pays-du-monde-et-leur-capitale/" 
-pays_2 <- str_to_upper(delete.accent(read_html(url) %>% html_nodes("tr+ tr td:nth-child(1)") %>% html_text()))
-capitals_2 <- str_to_upper(delete.accent(read_html(url) %>% html_nodes("tr+ tr td:nth-child(2)") %>% html_text()))
-collecte.pays.capitals <- data.frame("Pays"=pays_2,"Capitals"=capitals_2)
-
-# jointure avec collecte data
-collecte <- merge(collecte.pays.capitals,information.pays,by.x = "Pays", by.y = "Pays", all = TRUE)
-
-collecte <- collecte[-c(261:271),]
-
-rownames(information.pays) <- information.pays$Pays
-information.pays$Pays <- NULL
-#"Esperance_vie","Mortalite infantile","Indice perf env","Mortalit?"
-colnames(information.pays) <- c("Continent","Esperance_vie","Mortalite_inf","Indice_perf_env","Mortalite",
+# Nommage de colonnes du dataframe pour chaque rubrique extraite depuis le site "Esperance_vie","Mortalite infantile","Indice perf env","Mortalite" avec la dataframe du "pays" et "continent" 
+colnames(information.pays) <- c("Pays","Continent","Esperance_vie","Mortalite_inf","Indice_perf_env","Mortalite",
                                 "tourisme","pib-par-habitant","Natalite","Superficie")
+
+# Récuperation pays et capitals qui permettron construire la dataframe qui contient les capitals et le pays qui permettra faire la jointure avec la dataframe information.pays
+url <- "https://jeretiens.net/tous-les-pays-du-monde-et-leur-capitale/" 
+capitals_2 <- str_to_upper(delete.accent(read_html(url) %>% html_nodes("tr+ tr td:nth-child(2)") %>% html_text()))
+pays_2 <- str_to_upper(delete.accent(read_html(url) %>% html_nodes("tr+ tr td:nth-child(1)") %>% html_text()))
+collecte.pays.capitals <- data.frame("Pays"=pays_2,"Capitals"=capitals_2)
+# Jointure entre la dataframe collecte.pays.capitals avec information.pays
+collecte <- merge(collecte.pays.capitals,information.pays,by.x = "Pays", by.y = "Pays", all = TRUE)
+# Nettoyage des pays qu'on va pas utiliser car il ont pas d'information significative 
+collecte <- collecte[-c(261:271),]
+collecte
 
 
 # utilisation api openweather
