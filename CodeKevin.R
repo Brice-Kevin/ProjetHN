@@ -1,6 +1,7 @@
 #Web scrapping
 library(xml2)
 library(rvest)
+library(jsonlite)
 
 collecte.Data <- function(n){
   url.fonction <- paste('https://www.populationdata.net/palmares/',n,'/',sep="")
@@ -28,12 +29,15 @@ for(i in table_name)
 information.pays
 rownames(information.pays) <- information.pays$Pays
 information.pays$Pays <- NULL
-#"Esperance_vie","Mortalite infantile","Indice perf env","Mortalité"
-colnames(information.pays) <- c("Continent","Esperance_vie","Mortalité_inf","Indice_perf_env","Mortalité",
-                                "tourisme","pib-par-habitant","Natalité","Superficie")
+#"Esperance_vie","Mortalite infantile","Indice perf env","Mortalit?"
+colnames(information.pays) <- c("Continent","Esperance_vie","Mortalite_inf","Indice_perf_env","Mortalite",
+                                "tourisme","pib-par-habitant","Natalite","Superficie")
 
 
-
+# utilisation api openweather
+url_api  <- serieData("http://api.openweathermap.org/data/2.5/weather?q=Kingston&appid=9ada210033e2363be58a9fac5b682c4f")
+api_data <- fromJSON(url_api)
+names(site_data)
 
   
   
