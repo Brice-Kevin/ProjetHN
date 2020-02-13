@@ -1,4 +1,14 @@
-# Web scrapping
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Projet Humanités Numériques Web scrapping et utilisation des API's # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # 
+# Jeu de données pays du monde # 
+# # # # # # # # # # # # # # # # 
+
+
+# Installation des libraries necessaires pour le web scraping
+install.packages(c("tidyverse","xml2","rvest","jsonlite"))
+
 library(tidyverse)
 library(xml2)
 library(rvest)
@@ -69,8 +79,16 @@ collecte <- merge(collecte.pays.capitals,information.pays,by.x = "Pays", by.y = 
 collecte <- collecte[-c(258:271),]
 collecte
 
+
+
+
 rownames(collecte) <- collecte$Pays
 collecte$Pays <- NULL
+
+
+
+
+
 
 # utilisation api openweather
 api.Data <- function(n){
@@ -78,24 +96,19 @@ api.Data <- function(n){
   api_data <- fromJSON(url_api)
   longitude <- api_data$coord$lon
   latitude <- api_data$coord$lat
-  temps <- api_data$weather$description
   temperature <- api_data$main$temp
   temp_max <- api_data$main$temp_max
   temp_min <- api_data$main$temp_min
-  humid <- api_data$main$humidity
+  humidity <- api_data$main$humidity
+  temps <- api_data$weather$description
   vitesse_vent <- api_data$wind$speed
   direction_vent <- api_data$wind$deg
-  rafale_vent <- api_data$wind$gust
-  return(data.frame("Ville"=n,"longitude"=longitude,"latitude"=latitude,
-                    "type_temps"=temps,"temp_actu"=temperature,
-                    "temp_max"=temp_min,"temp_max"=temp_max,humid,
-                    "vitesse_vent"=vitesse_vent,"direct_vent"=direction_vent,
-                    "raf_vent"=rafale_vent))
+  
+  return(data.frame("ville"=n,"longitude"=longitude,"latitude"=latitude,"temp_actu"=temperature,"temp_max"=temp_max,"temp_min"=temp_min,
+                    "humidity"=humidity,"type_temps"=temps,"vitesse_vent"=vitesse_vent,"direct_vent"=direction_vent))
 }
 
-api.Data("BERLIN")
-
-
+api.Data("reims")
 
 
 #names(api_data)
