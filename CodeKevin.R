@@ -42,7 +42,7 @@ remplacer.nom.pays <- function(v1,v2,data){
 #v1 <- c("BELARUS (BIELORUSSIE)","MYANMAR (BIRMANIE)","BOSNIE-ET-HERZEGOVINE","GRENADE","MAURICE","COOK","MACEDOINE DU NORD","MARSHALL","TCHEQUIE","SAINT-CHRISTOPHE-ET-NIEVES","SAO TOME-ET-PRINCIPE",
 #        "SEYCHELLES","SLOVAQUIE","ESWATINI (SWAZILAND)","TIMOR ORIENTAL")
 #v2 <- c("BIELORUSSIE","BIRMANIE","BOSNIE-HERZEGOVINE","GRENADE (ILES DE LA)","ILE MAURICE","ÎLES COOK","MACEDOINE","MARSHALL (ILES)","REPUBLIQUE TCHEQUE","SAINT-KITTS-ET-NEVIS","SAO TOME ET PRINCIPE",
-#        "SEYCHELLES","SLOVAQUIE","SWAZILAND","TIMOR-ORIENTAL")
+#       "SEYCHELLES","SLOVAQUIE","SWAZILAND","TIMOR-ORIENTAL")
 #pays <- remplacer.nom.pays(v1,v2,pays)
 
 # Récuperation du pays et continent qui permettront construire la dataframe qui fera la jointure avec la dataframe de la fonction collecte.Data
@@ -106,13 +106,33 @@ api.Data <- function(n){
   
   return(data.frame("ville"=n,"longitude"=longitude,"latitude"=latitude,"temp_actu"=temperature,"temp_max"=temp_max,"temp_min"=temp_min,
                     "humidity"=humidity,"type_temps"=temps,"vitesse_vent"=vitesse_vent,"direct_vent"=direction_vent))
+  
 }
 
-api.Data("reims")
+collecte.pays.capitals$Capitals
 
+# essay 1 
+for (i in collecte.pays.capitals$Capitals) {
+  for (j in api.Data(i)) {
+    if(j == 0 | j == 1 )
+      j <- ""
+  }
+  ville_temps <- api.Data(i)
+  temps_info <- data.frame(ville_temps) 
+  print(temps_info)
+}
 
-#names(api_data)
+# essay 2
+for (i in collecte.pays.capitals$Capitals) {
+  info_ville_meteo <- api.Data(i)
+  for (j in info_ville_meteo) {
+    if(j == "" ){j <- "vide"}
+  }
+  api_info <- data.frame(info_ville_meteo)
+  print(api_info)
+}
 
+print(api.Data("reims"))
   
   
   
