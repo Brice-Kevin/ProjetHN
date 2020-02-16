@@ -62,8 +62,8 @@ v2 <- c("BELARUS (BIELORUSSIE)","MYANMAR (BIRMANIE)","BOSNIE-ET-HERZEGOVINE","GR
         "SEYCHELLES","ESWATINI (SWAZILAND)","TIMOR ORIENTAL")
 pays_2 <- remplacer.nom.pays(v1,v2,pays_2)
 collecte.pays.capitals <- data.frame("Pays"=pays_2)
-v1 <- c("SAINT JOHN'S","BUENOS-AIRES","SUCRE (OU LA PAZ)","LA HAVANE","ATHENES","KOWEIT")
-v2 <- c("SAINT JOHN","BUENOS AIRES","LA PAZ","HAVANA","ATHÈNES","KOWEÏT")
+v1 <- c("SAINT JOHN'S","BUENOS-AIRES","SUCRE (OU LA PAZ)","LA HAVANE","ATHENES","KOWEIT","JERUSALEM-EST","SAINT-DOMINGUE","SRI JAYAWARDENAPURA","DOUCHANBE","FANAFUTI")
+v2 <- c("SAINT JOHN","BUENOS AIRES","LA PAZ","HAVANA","ATHÈNES","KOWEÏT","JERUSALEM EST","SANTO DOMINGO","KOTTE","DOUCHANBÉ","FUNAFUTI")
 capitals_2 <- remplacer.nom.pays(v1,v2,capitals_2)
 collecte.pays.capitals$Capitals <- capitals_2
 
@@ -115,27 +115,22 @@ api.Data <- function(n){
   else
     temps <- api_data$weather$description
   
-  if(length(api_data$main$speed) == 0)
-    vitesse_vent <- NA
-  else
-    vitesse_vent <- api_data$wind$speed
-  
-  if(length(api_data$main$deg) == 0)
-    direction_vent <- NA
-  else
-    direction_vent <- api_data$wind$deg
   Sys.sleep(runif(1,0.75,1.5))
   return(c("Capitals"=n,"longitude"=longitude,"latitude"=latitude,"temp_actu"=temperature,"temp_max"=temp_max,"temp_min"=temp_min,
-                    "humidity"=humidity,"type_temps"=temps,"vitesse_vent"=vitesse_vent,"direct_vent"=direction_vent))
+                    "humidity"=humidity,"type_temps"=temps))
 }
 
 #api.Data("ABU DHABI")
-collecte.api <- data.frame(matrix(1,1,10))
+collecte.api <- data.frame(matrix(1,1,8))
 #Application de la fonction de collecte de donnees depuis le site
-for(i in collecte$Capitals[100:150])
+for(i in collecte$Capitals[1:194])
   collecte.api <- rbind(collecte.api,api.Data(i))
 
 collecte.api <- collecte.api[-1,]
+colnames(collecte.api) <- c("Capitals","Longitude","Latitude","Temp_actu","Temp_max","Temp_min","Humidity","Type_temps")
+
+collecte <- merge(collecte,collecte.api, by.x="Capitals", by.y ="Capitals", all = TRUE)
+
 
   
   
