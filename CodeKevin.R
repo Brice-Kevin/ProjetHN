@@ -32,51 +32,55 @@ remplacer.nom.pays <- function(v1,v2,data){
 }
 #Fin les fonctions
 
-#Creation de la premiere df pour la jointure
+##Creation de la premiere df pour la jointure
+#Utilisation du webscrapping pour la recupération d'information sur le site ci dessous
 url <- "https://www.populationdata.net/palmares/esperance-de-vie/"
 pays <- str_to_upper(delete.accent(read_html(url) %>% html_nodes('td:nth-child(2)') %>% html_text()))
 continent <- str_to_upper(delete.accent(read_html(url) %>% html_nodes('td:nth-child(3)') %>% html_text()))
+
+#Creation de la premiere df contenant les pays et les continents
 information.pays <- data.frame("Continent"=continent)
 information.pays$Pays <- pays
-#pays <- remplacer.nom.pays(c("SLOVAQUIE"),c("SLOVAQUIE "),pays)
 
 #Nom des pages pour la fonction
 table_name <- c("esperance-de-vie","mortalite-infantile","ipe","mortalite","tourisme",
                 "pib-par-habitant","natalite","population")
 
-#Application de la fonction de collecte de donnees depuis le site
+#Application de la fonction de collecte de donnees depuis le site pour actualiser les information de la premiere df
 for(i in table_name)
   information.pays <- merge(information.pays,collecte.Data(i),by.x = "Pays", by.y = "Pays", all = TRUE)
 
-#Creation de la premiere df pour la jointure
+#Renommer les colonnes de information.pays
 colnames(information.pays) <- c("Pays","Continent","Esperance_vie","Mortalite_inf","Indice_perf_env","Mortalite",
                                 "tourisme","pib-par-habitant","Natalite","Superficie")
 
-#Creation de la deuxieme df pour la jointure
+##Creation de la deuxieme df pour la jointure
+#Utilisation du webscrapping pour la recupération d'information sur le site ci dessous
 url <- "https://jeretiens.net/tous-les-pays-du-monde-et-leur-capitale/" 
 capitals_2 <- str_to_upper(delete.accent(read_html(url) %>% html_nodes("tr+ tr td:nth-child(2)") %>% html_text()))
 pays_2 <- str_to_upper(delete.accent(read_html(url) %>% html_nodes("tr+ tr td:nth-child(1)") %>% html_text()))
+
+#Remplacement du nom de certains pays pour assurer une certaine concordance lors de la jointure
 v1 <- c("BIELORUSSIE","BIRMANIE","BOSNIE-HERZEGOVINE","GRENADE (ILES DE LA)","ILE MAURICE","ILES COOK","MACEDOINE","MARSHALL (ILES)","REPUBLIQUE TCHEQUE","SAINT-KITTS-ET-NEVIS","SAO TOME ET PRINCIPE",
         "SEYCHELLES","SWAZILAND","TIMOR-ORIENTAL")
 v2 <- c("BELARUS (BIELORUSSIE)","MYANMAR (BIRMANIE)","BOSNIE-ET-HERZEGOVINE","GRENADE","MAURICE","COOK","MACEDOINE DU NORD","MARSHALL","TCHEQUIE","SAINT-CHRISTOPHE-ET-NIEVES","SAO TOME-ET-PRINCIPE",
         "SEYCHELLES","ESWATINI (SWAZILAND)","TIMOR ORIENTAL")
 pays_2 <- remplacer.nom.pays(v1,v2,pays_2)
+
+#Creation de la deuxieme df contenant les pays et leur capitale
 collecte.pays.capitals <- data.frame("Pays"=pays_2)
 v1 <- c("SAINT JOHN'S","BUENOS-AIRES","SUCRE (OU LA PAZ)","LA HAVANE","ATHENES","KOWEIT","JERUSALEM-EST","SAINT-DOMINGUE","SRI JAYAWARDENAPURA","DOUCHANBE","FANAFUTI")
 v2 <- c("SAINT JOHN","BUENOS AIRES","LA PAZ","HAVANA","ATHÈNES","KOWEÏT","JERUSALEM EST","SANTO DOMINGO","KOTTE","DOUCHANBÉ","FUNAFUTI")
 capitals_2 <- remplacer.nom.pays(v1,v2,capitals_2)
 collecte.pays.capitals$Capitals <- capitals_2
 
-# Jointure entre la dataframe collecte.pays.capitals et information.pays
+# Jointure entre la dataframe information.pays (premiere df) et collecte.pays.capitals (deuxieme df)
 collecte <- merge(collecte.pays.capitals,information.pays,by.x = "Pays", by.y = "Pays", all = TRUE)
-# Nettoyage des pays qu'on va pas utiliser car il ont pas d'information significative 
+#Suppression des pays ne possedant pas assez d'informations significatives 
 collecte <- collecte[-c(160,163,166,193,199:256),]
-rownames(collecte) <- collecte$Pays
-collecte$Pays <- NULL
 
-# utilisation api openweather
+## Création de la fonction pour l'utilisation api openweather et la collecte des informations necessaires
 api.Data <- function(n){
-  #longitude <- latitude <- temperature <- temp_max <- temp_min <- humidity <- temps <- vitesse_vent <- direction_vent <-
   url_api  <- paste("http://api.openweathermap.org/data/2.5/weather?q=",n,"&units=metric&appid=9ada210033e2363be58a9fac5b682c4f&lang=fr",sep="")
   api_data <- fromJSON(url_api)
   
@@ -120,16 +124,23 @@ api.Data <- function(n){
                     "humidity"=humidity,"type_temps"=temps))
 }
 
-#api.Data("ABU DHABI")
+#Creation de la df qui contiendra les inforamtions retournées par l'appelle de la fonction api.data
 collecte.api <- data.frame(matrix(1,1,8))
-#Application de la fonction de collecte de donnees depuis le site
+#Application de la fonction api.data sur l'ensemble des capitales présente dans df collecte
 for(i in collecte$Capitals[1:194])
   collecte.api <- rbind(collecte.api,api.Data(i))
 
+#Suppression de la premiere ligne utilisée pour initialiser la df collecte.api
 collecte.api <- collecte.api[-1,]
+#Renommage des colonnes de la df en vue de faciliter la compréhension et la jointure qui va suivre
 colnames(collecte.api) <- c("Capitals","Longitude","Latitude","Temp_actu","Temp_max","Temp_min","Humidity","Type_temps")
 
+#Jointure entre la df collecte et la df collecte.api
 collecte <- merge(collecte,collecte.api, by.x="Capitals", by.y ="Capitals", all = TRUE)
+#Renommage des differentes ligne de notre df finale et suppression de la colonne pays
+rownames(collecte) <- collecte$Pays
+collecte$Pays <- NULL
+#collecte <- as_tibble(column_to_rownames(collecte$pays))
 
 
   
