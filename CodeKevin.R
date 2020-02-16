@@ -1,12 +1,3 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# Projet Humanit√©s Num√©riques Web scrapping et utilisation des API's # 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# # # # # # # # # # # # # # # # # 
-# Jeu de donn√©es pays du monde # 
-# # # # # # # # # # # # # # # # 
-
-
-# Installation des libraries necessaires pour le web scraping
 install.packages(c("tidyverse","xml2","rvest","jsonlite"))
 
 library(tidyverse)
@@ -14,13 +5,15 @@ library(xml2)
 library(rvest)
 library(jsonlite)
 
-# Fonction formatage des accents 
+#Les fonctions
+##Supprimer les caracteres accentues et espace superflus
 delete.accent <- function(x) {
-  x <- chartr("√©√®√´√™√â√à√ã√ä√†√Ä√ß√á√è√é√Æ√Ø", "eeeeEEEEaAcCIIii", x)
+  x <- chartr("ÈËÍÎ…» À‡¿Á«ŒœÓÔ", "eeeeEEEEaAcCIIii", x)
+  x <- gsub("(^\\s+|\\s+$|(?<=\\s)\\s)","",x, perl=T)
   return(x)
 }
 
-# Fonction qui permettra faire le boucle pour coller chaque morceau de l'url o√π nous allons extraire l'information de chaque rubrique   
+##Collecter les donnees sur le site (webscapping)
 collecte.Data <- function(n){
   url.fonction <- paste('https://www.populationdata.net/palmares/',n,'/',sep="")
   pays.fonction <- str_to_upper(delete.accent(read_html(url.fonction) %>% html_nodes('td:nth-child(2)') %>% html_text()))
@@ -28,9 +21,8 @@ collecte.Data <- function(n){
   return(data.frame("Pays"=pays.fonction,"Info"=info.fonction))
 }
 
-# Fonction qui permettra changer les differences dans les noms des pays pour faire bien marcher la jointure avec les deux tables contenants les pays 
+##Remplacer le nom des pays pour faire concorder les donnees
 remplacer.nom.pays <- function(v1,v2,data){
-  # Tous les champs √† remplacer ont un NA comme valeur de contient
   j <- 1
   for (i in c(1:length(v1))) {
     data[data==v1[i]] <- v2[j]
@@ -38,101 +30,112 @@ remplacer.nom.pays <- function(v1,v2,data){
   }
   return (data)
 }
+#Fin les fonctions
 
-#v1 <- c("BELARUS (BIELORUSSIE)","MYANMAR (BIRMANIE)","BOSNIE-ET-HERZEGOVINE","GRENADE","MAURICE","COOK","MACEDOINE DU NORD","MARSHALL","TCHEQUIE","SAINT-CHRISTOPHE-ET-NIEVES","SAO TOME-ET-PRINCIPE",
-#        "SEYCHELLES","SLOVAQUIE","ESWATINI (SWAZILAND)","TIMOR ORIENTAL")
-#v2 <- c("BIELORUSSIE","BIRMANIE","BOSNIE-HERZEGOVINE","GRENADE (ILES DE LA)","ILE MAURICE","√éLES COOK","MACEDOINE","MARSHALL (ILES)","REPUBLIQUE¬†TCHEQUE","SAINT-KITTS-ET-NEVIS","SAO TOME ET PRINCIPE",
-#       "SEYCHELLES","SLOVAQUIE","SWAZILAND","TIMOR-ORIENTAL")
-#pays <- remplacer.nom.pays(v1,v2,pays)
-
-# R√©cuperation du pays et continent qui permettront construire la dataframe qui fera la jointure avec la dataframe de la fonction collecte.Data
+#Creation de la premiere df pour la jointure
 url <- "https://www.populationdata.net/palmares/esperance-de-vie/"
 pays <- str_to_upper(delete.accent(read_html(url) %>% html_nodes('td:nth-child(2)') %>% html_text()))
 continent <- str_to_upper(delete.accent(read_html(url) %>% html_nodes('td:nth-child(3)') %>% html_text()))
 information.pays <- data.frame("Continent"=continent)
 information.pays$Pays <- pays
-information.pays$Continent <- continent
+#pays <- remplacer.nom.pays(c("SLOVAQUIE"),c("SLOVAQUIE "),pays)
 
-# information.pays <- data.frame("Pays"=pays,"Continent"=continent)
-
-
-
-# Vecteur qui contiendra chaque morceau d'url passant comme param√®tre de la fonction collecte.Data  pour construire l'url de chaque rubrique
+#Nom des pages pour la fonction
 table_name <- c("esperance-de-vie","mortalite-infantile","ipe","mortalite","tourisme",
                 "pib-par-habitant","natalite","population")
-# Boucle pour parcourir le vector et avoir l'index de la fonction collecte.Data
+
+#Application de la fonction de collecte de donnees depuis le site
 for(i in table_name)
-  # Jointure entre la premi√®re dataframe qui contient le pays et le continant avec la dataframe qui donne la fonction collecte.Data en utilisant l'index de la boucle pr√©c√©dente
   information.pays <- merge(information.pays,collecte.Data(i),by.x = "Pays", by.y = "Pays", all = TRUE)
-# Nommage de colonnes du dataframe pour chaque rubrique extraite depuis le site "Esperance_vie","Mortalite infantile","Indice perf env","Mortalite" avec la dataframe du "pays" et "continent" 
+
+#Creation de la premiere df pour la jointure
 colnames(information.pays) <- c("Pays","Continent","Esperance_vie","Mortalite_inf","Indice_perf_env","Mortalite",
                                 "tourisme","pib-par-habitant","Natalite","Superficie")
 
-# R√©cuperation pays et capitals qui permettron construire la dataframe qui contient les capitals et le pays qui permettra faire la jointure avec la dataframe information.pays
+#Creation de la deuxieme df pour la jointure
 url <- "https://jeretiens.net/tous-les-pays-du-monde-et-leur-capitale/" 
 capitals_2 <- str_to_upper(delete.accent(read_html(url) %>% html_nodes("tr+ tr td:nth-child(2)") %>% html_text()))
 pays_2 <- str_to_upper(delete.accent(read_html(url) %>% html_nodes("tr+ tr td:nth-child(1)") %>% html_text()))
-collecte.pays.capitals <- data.frame("Pays"=pays_2,"Capitals"=capitals_2)
-# Jointure entre la dataframe collecte.pays.capitals avec information.pays
+v1 <- c("BIELORUSSIE","BIRMANIE","BOSNIE-HERZEGOVINE","GRENADE (ILES DE LA)","ILE MAURICE","ILES COOK","MACEDOINE","MARSHALL (ILES)","REPUBLIQUE TCHEQUE","SAINT-KITTS-ET-NEVIS","SAO TOME ET PRINCIPE",
+        "SEYCHELLES","SWAZILAND","TIMOR-ORIENTAL")
+v2 <- c("BELARUS (BIELORUSSIE)","MYANMAR (BIRMANIE)","BOSNIE-ET-HERZEGOVINE","GRENADE","MAURICE","COOK","MACEDOINE DU NORD","MARSHALL","TCHEQUIE","SAINT-CHRISTOPHE-ET-NIEVES","SAO TOME-ET-PRINCIPE",
+        "SEYCHELLES","ESWATINI (SWAZILAND)","TIMOR ORIENTAL")
+pays_2 <- remplacer.nom.pays(v1,v2,pays_2)
+collecte.pays.capitals <- data.frame("Pays"=pays_2)
+v1 <- c("SAINT JOHN'S","BUENOS-AIRES","SUCRE (OU LA PAZ)","LA HAVANE","ATHENES","KOWEIT")
+v2 <- c("SAINT JOHN","BUENOS AIRES","LA PAZ","HAVANA","ATH»NES","KOWEœT")
+capitals_2 <- remplacer.nom.pays(v1,v2,capitals_2)
+collecte.pays.capitals$Capitals <- capitals_2
+
+# Jointure entre la dataframe collecte.pays.capitals et information.pays
 collecte <- merge(collecte.pays.capitals,information.pays,by.x = "Pays", by.y = "Pays", all = TRUE)
 # Nettoyage des pays qu'on va pas utiliser car il ont pas d'information significative 
-collecte <- collecte[-c(258:271),]
-collecte
-
-
-
-
+collecte <- collecte[-c(160,163,166,193,199:256),]
 rownames(collecte) <- collecte$Pays
 collecte$Pays <- NULL
 
-
-
-
-
-
 # utilisation api openweather
 api.Data <- function(n){
+  #longitude <- latitude <- temperature <- temp_max <- temp_min <- humidity <- temps <- vitesse_vent <- direction_vent <-
   url_api  <- paste("http://api.openweathermap.org/data/2.5/weather?q=",n,"&units=metric&appid=9ada210033e2363be58a9fac5b682c4f&lang=fr",sep="")
   api_data <- fromJSON(url_api)
-  longitude <- api_data$coord$lon
-  latitude <- api_data$coord$lat
-  temperature <- api_data$main$temp
-  temp_max <- api_data$main$temp_max
-  temp_min <- api_data$main$temp_min
-  humidity <- api_data$main$humidity
-  temps <- api_data$weather$description
-  vitesse_vent <- api_data$wind$speed
-  direction_vent <- api_data$wind$deg
   
-  return(data.frame("ville"=n,"longitude"=longitude,"latitude"=latitude,"temp_actu"=temperature,"temp_max"=temp_max,"temp_min"=temp_min,
+  if(length(api_data$coord$lon) == 0)
+    longitude <- NA
+  else
+    longitude <- api_data$coord$lon
+  
+  if(length(api_data$coord$lat) == 0)
+    latitude <- NA
+  else
+    latitude <- api_data$coord$lat
+  
+  if(length(api_data$main$temp) == 0)
+    temperature <- NA
+  else
+    temperature <- api_data$main$temp
+  
+  if(length(api_data$main$temp_max) == 0)
+    temp_max <- NA
+  else
+    temp_max <- api_data$main$temp_max
+  
+  if(length(api_data$main$temp_min) == 0)
+    temp_min <- NA
+  else
+    temp_min <- api_data$main$temp_min
+  
+  if(length(api_data$main$humidity) == 0)
+    humidity <- NA
+  else
+    humidity <- api_data$main$humidity
+  
+  if(length(api_data$weather$description) == 0)
+    temps <- NA
+  else
+    temps <- api_data$weather$description
+  
+  if(length(api_data$main$speed) == 0)
+    vitesse_vent <- NA
+  else
+    vitesse_vent <- api_data$wind$speed
+  
+  if(length(api_data$main$deg) == 0)
+    direction_vent <- NA
+  else
+    direction_vent <- api_data$wind$deg
+  Sys.sleep(runif(1,0.75,1.5))
+  return(c("Capitals"=n,"longitude"=longitude,"latitude"=latitude,"temp_actu"=temperature,"temp_max"=temp_max,"temp_min"=temp_min,
                     "humidity"=humidity,"type_temps"=temps,"vitesse_vent"=vitesse_vent,"direct_vent"=direction_vent))
-  
 }
 
-collecte.pays.capitals$Capitals
+#api.Data("ABU DHABI")
+collecte.api <- data.frame(matrix(1,1,10))
+#Application de la fonction de collecte de donnees depuis le site
+for(i in collecte$Capitals[100:150])
+  collecte.api <- rbind(collecte.api,api.Data(i))
 
-# essay 1 
-for (i in collecte.pays.capitals$Capitals) {
-  for (j in api.Data(i)) {
-    if(j == 0 | j == 1 )
-      j <- ""
-  }
-  ville_temps <- api.Data(i)
-  temps_info <- data.frame(ville_temps) 
-  print(temps_info)
-}
+collecte.api <- collecte.api[-1,]
 
-# essay 2
-for (i in collecte.pays.capitals$Capitals) {
-  info_ville_meteo <- api.Data(i)
-  for (j in info_ville_meteo) {
-    if(j == "" ){j <- "vide"}
-  }
-  api_info <- data.frame(info_ville_meteo)
-  print(api_info)
-}
-
-print(api.Data("reims"))
-  
   
   
