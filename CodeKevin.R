@@ -140,7 +140,6 @@ collecte <- merge(collecte,collecte.api, by.x="Capitals", by.y ="Capitals", all 
 #Renommage des differentes ligne de notre df finale et suppression de la colonne pays
 rownames(collecte) <- collecte$Pays
 collecte$Pays <- NULL
-#collecte <- as_tibble(column_to_rownames(collecte$pays))
 
 
   
