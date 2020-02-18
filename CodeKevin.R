@@ -87,38 +87,32 @@ api.Data <- function(n){
   if(length(api_data$coord$lon) == 0)
     longitude <- NA
   else
-    longitude <- as.numeric(api_data$coord$lon)
-    longitude <- as.numeric(longitude)
+    longitude <-api_data$coord$lon
   
   if(length(api_data$coord$lat) == 0)
     latitude <- NA
   else
-    latitude <- as.numeric(api_data$coord$lat)
-    latitude <- as.numeric(latitude)
+    latitude <- api_data$coord$lat
   
   if(length(api_data$main$temp) == 0)
     temperature <- NA
   else
-    temperature <- as.numeric(api_data$main$temp)
-    temperature <- as.numeric(temperature)
+    temperature <- api_data$main$temp
   
   if(length(api_data$main$temp_max) == 0)
     temp_max <- NA
   else
-    temp_max <- as.numeric(api_data$main$temp_max)
-    temp_max <- as.numeric(temp_max)
+    temp_max <- api_data$main$temp_max
   
   if(length(api_data$main$temp_min) == 0)
     temp_min <- NA
   else
-    temp_min <- as.numeric(api_data$main$temp_min)
-    temp_min <- as.numeric(temp_min)
+    temp_min <- api_data$main$temp_min
   
   if(length(api_data$main$humidity) == 0)
     humidity <- NA
   else
-    humidity <- as.numeric(api_data$main$humidity)
-    humidity <- as.numeric(humidity)
+    humidity <- api_data$main$humidity
   
   if(length(api_data$weather$description) == 0)
     temps <- NA
@@ -146,4 +140,11 @@ collecte <- merge(collecte,collecte.api, by.x="Capitals", by.y ="Capitals", all 
 #Renommage des differentes ligne de notre df finale et suppression de la colonne pays
 rownames(collecte) <- collecte$Pays
 collecte$Type_temps <- as.factor(collecte$Type_temps)
+collecte$Humidity <- as.numeric(collecte$Humidity)
+collecte$Longitude <- as.numeric(collecte$Longitude)
+collecte$Latitude <- as.numeric(collecte$Latitude)
+collecte$Temp_actu <- as.numeric(collecte$Temp_actu)
+collecte$Temp_max <- as.numeric(collecte$Temp_max)
+collecte$Temp_min <- as.numeric(collecte$Temp_min)
+head(collecte, 9)
 
