@@ -138,7 +138,7 @@ colnames(collecte.api) <- c("Capitals","Longitude","Latitude","Temp_actu","Temp_
 #Jointure entre la df collecte et la df collecte.api
 collecte <- merge(collecte,collecte.api, by.x="Capitals", by.y ="Capitals", all = TRUE)
 #Renommage des differentes ligne de notre df finale et suppression de la colonne pays
-rownames(collecte) <- collecte$Pays
+collecte$Pays <- collecte$Pays
 collecte$Type_temps <- as.factor(collecte$Type_temps)
 collecte$Humidity <- as.numeric(collecte$Humidity)
 collecte$Longitude <- as.numeric(collecte$Longitude)
@@ -146,5 +146,6 @@ collecte$Latitude <- as.numeric(collecte$Latitude)
 collecte$Temp_actu <- as.numeric(collecte$Temp_actu)
 collecte$Temp_max <- as.numeric(collecte$Temp_max)
 collecte$Temp_min <- as.numeric(collecte$Temp_min)
-head(collecte, 9)
+head(collecte, 8)
+collecte <- as_tibble(rownames_to_column(collecte))
 
