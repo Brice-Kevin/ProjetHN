@@ -1,0 +1,16 @@
+---
+title: "Presentation_HN"
+author: "LIEPO Brice - KEvin"
+date: "25/02/2020"
+output: powerpoint_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r cars, echo = TRUE}
+summary(collecte)
+```
+
