@@ -7,17 +7,17 @@ library(jsonlite)
 library(polite)
 
 #Les fonctions
-##Supprimer les caracteres accentues et espace superflus
+##Supprimer les caract√®res accentues et espace superflus
 delete.accent <- function(x) {
-  x <- chartr("ÈËÍÎ…» À‡¿Á«ŒœÓÔ", "eeeeEEEEaAcCIIii", x)
+  x <- chartr("√©√®√™√´√â√à√ä√ã√†√Ä√ß√á√é√è√Æ√Ø", "eeeeEEEEaAcCIIii", x)
   x <- gsub("(^\\s+|\\s+$|(?<=\\s)\\s)","",x, perl=T)
   return(x)
 }
 
 ##Collecter les donnees sur le site (webscapping)
 collecte.Data <- function(n, session1){
-  # Make our intentions known to the website
-  session1 <- bow(url="https://www.populationdata.net/palmares/", user_agent="…tudiants ‡ l'universitÈ de Reims Champagne Ardenne",force=TRUE)
+  # Faire savoir nos intentions au website
+  session1 <- bow(url="https://www.populationdata.net/palmares/", user_agent="√âtudiants √† l'universit√© de Reims Champagne Ardenne",force=TRUE)
   url.fonction <- paste("https://www.populationdata.net/palmares/",n,"/",sep="")
   populationdata <- nod(session1, url.fonction) %>% scrape(verbose = TRUE)
   pays.fonction <- str_to_upper(delete.accent(populationdata %>% html_nodes('td:nth-child(2)') %>% html_text()))
@@ -37,10 +37,10 @@ remplacer.nom.pays <- function(v1,v2,data){
 #Fin les fonctions
 
 ##Creation de la premiere df pour la jointure
-#Utilisation du webscrapping pour la recupÈration d'information sur le site ci dessous
+#Utilisation du webscrapping pour la recup√©ration d'information sur le site ci dessous
 urlpopulationdata2 <- "https://www.populationdata.net/palmares/esperance-de-vie/"
-# Make our intentions known to the website
-session2 <- bow(urlpopulationdata2, user_agent="…tudiants ‡ l'universitÈ de Reims Champagne Ardenne",force=TRUE)
+# Faire savoir nos intentions au website
+session2 <- bow(urlpopulationdata2, user_agent="√âtudiants √† l'universit√© de Reims Champagne Ardenne",force=TRUE)
 urlpopulationdata2 <- nod(session2, urlpopulationdata2) %>% scrape(verbose = TRUE)
 pays <-  str_to_upper(delete.accent(urlpopulationdata2 %>% html_nodes('td:nth-child(2)') %>% html_text()))
 continent <- str_to_upper(delete.accent(urlpopulationdata2 %>% html_nodes('td:nth-child(3)') %>% html_text()))
@@ -59,27 +59,27 @@ for(i in table_name)
 
 #Renommer les colonnes de information.pays
 colnames(information.pays) <- c("Pays","Continent","Esperance_vie","Mortalite_inf","Indice_perf_env","Mortalite",
-                                "tourisme","pib-par-habitant","Natalite","Superficie")
+                                "Tourisme","Pib-par-habitant","Natalite","Superficie")
 
 ##Creation de la deuxieme df pour la jointure
-#Utilisation du webscrapping pour la recupÈration d'information sur le site ci dessous
+#Utilisation du webscrapping pour la recup√©ration d'information sur le site ci dessous
 urljeretiens <- "https://jeretiens.net/tous-les-pays-du-monde-et-leur-capitale/" 
-# Make our intentions known to the website
-session3 <- bow(urljeretiens, user_agent="…tudiants ‡ l'universitÈ de Reims Champagne Ardenne",force=TRUE)
+# Faire savoir nos intentions au website
+session3 <- bow(urljeretiens, user_agent="√âtudiants √† l'universit√© de Reims Champagne Ardenne",force=TRUE)
 jeretiens <- nod(session3, urljeretiens) %>% scrape(verbose = TRUE)
 capitals_2 <- str_to_upper(delete.accent(jeretiens %>% html_nodes("tr+ tr td:nth-child(2)") %>% html_text()))
 pays_2 <- str_to_upper(delete.accent(jeretiens %>% html_nodes("tr+ tr td:nth-child(1)") %>% html_text()))
 
 #Remplacement du nom de certains pays pour assurer une certaine concordance lors de la jointure
-v1 <- c("BIELORUSSIE","BIRMANIE","BOSNIE-HERZEGOVINE","GRENADE (ILES DE LA)","ILE MAURICE","ILES COOK","MACEDOINE","MARSHALL (ILES)","REPUBLIQUE TCHEQUE","SAINT-KITTS-ET-NEVIS","S√O TOME ET PRINCIPE","SWAZILAND","TIMOR-ORIENTAL")
+v1 <- c("BIELORUSSIE","BIRMANIE","BOSNIE-HERZEGOVINE","GRENADE (ILES DE LA)","ILE MAURICE","ILES COOK","MACEDOINE","MARSHALL (ILES)","REPUBLIQUE TCHEQUE","SAINT-KITTS-ET-NEVIS","S√ÉO TOME ET PRINCIPE","SWAZILAND","TIMOR-ORIENTAL")
 v2 <- c("BELARUS (BIELORUSSIE)","MYANMAR (BIRMANIE)","BOSNIE-ET-HERZEGOVINE","GRENADE","MAURICE","COOK","MACEDOINE DU NORD","MARSHALL","TCHEQUIE","SAINT-CHRISTOPHE-ET-NIEVES","SAO TOME-ET-PRINCIPE","ESWATINI (SWAZILAND)","TIMOR ORIENTAL")
 pays_2 <- remplacer.nom.pays(v1,v2,pays_2)
 pays_2[163] <- "SEYCHELLES"
 pays_2[166] <- "SLOVAQUIE"
 #Creation de la deuxieme df contenant les pays et leur capitale
 collecte.pays.capitals <- data.frame("Pays"=pays_2)
-v1 <- c("SAINT JOHN'S","BUENOS-AIRES","SUCRE (OU LA PAZ)","LA HAVANE","ATHENES","KOWEIT","JERUSALEM-EST","SAINT-DOMINGUE","SRI JAYAWARDENAPURA","DOUCHANBE","FANAFUTI")
-v2 <- c("SAINT JOHN","BUENOS AIRES","LA PAZ","HAVANA","ATH»NES","KOWEœT","JERUSALEM EST","SANTO DOMINGO","KOTTE","DOUCHANB…","FUNAFUTI")
+v1 <- c("SAINT JOHN‚ÄôS","BUENOS-AIRES","SUCRE (OU LA PAZ)","LA HAVANE","ATHENES","KOWEIT","JERUSALEM-EST","SAINT-DOMINGUE","SRI JAYAWARDENAPURA","DOUCHANBE","FANAFUTI")
+v2 <- c("SAINT JOHN","BUENOS AIRES","LA PAZ","HAVANA","ATH√àNES","KOWE√èT","JERUSALEM EST","SANTO DOMINGO","KOTTE","DOUCHANB√â","FUNAFUTI")
 capitals_2 <- remplacer.nom.pays(v1,v2,capitals_2)
 collecte.pays.capitals$Capitals <- capitals_2
 
@@ -88,7 +88,7 @@ collecte <- merge(collecte.pays.capitals,information.pays,by.x = "Pays", by.y = 
 #Suppression des pays ne possedant pas assez d'informations significatives 
 collecte <- collecte[-c(160,193,199:254),]
 
-## CrÈation de la fonction pour l'utilisation api openweather et la collecte des informations necessaires
+## Cr√©ation de la fonction pour l'utilisation api openweather et la collecte des informations necessaires
 api.Data <- function(n){
   url_api  <- paste("http://api.openweathermap.org/data/2.5/weather?q=",n,"&units=metric&appid=9ada210033e2363be58a9fac5b682c4f&lang=fr",sep="")
   api_data <- fromJSON(url_api)
@@ -130,18 +130,18 @@ api.Data <- function(n){
   
   Sys.sleep(runif(1,0.75,1.5))
   return(c("Capitals"=n,"longitude"=longitude,"latitude"=latitude,"temp_actu"=temperature,"temp_max"=temp_max,"temp_min"=temp_min,
-                    "humidity"=humidity,"type_temps"=temps))
+           "humidity"=humidity,"type_temps"=temps))
 }
 
-#Creation de la df qui contiendra les inforamtions retournÈes par l'appelle de la fonction api.data
+#Creation de la df qui contiendra les inforamtions retourn√©es par l'appelle de la fonction api.data
 collecte.api <- data.frame(matrix(1,1,8))
-#Application de la fonction api.data sur l'ensemble des capitales prÈsente dans df collecte
+#Application de la fonction api.data sur l'ensemble des capitales pr√©sente dans df collecte
 for(i in collecte$Capitals[1:194])
   collecte.api <- rbind(collecte.api,api.Data(i))
 
-#Suppression de la premiere ligne utilisÈe pour initialiser la df collecte.api
+#Suppression de la premiere ligne utilis√©e pour initialiser la df collecte.api
 collecte.api <- collecte.api[-1,]
-#Renommage des colonnes de la df en vue de faciliter la comprÈhension et la jointure qui va suivre
+#Renommage des colonnes de la df en vue de faciliter la compr√©hension et la jointure qui va suivre
 colnames(collecte.api) <- c("Capitals","Longitude","Latitude","Temp_actu","Temp_max","Temp_min","Humidity","Type_temps")
 
 #Jointure entre la df collecte et la df collecte.api
@@ -156,5 +156,5 @@ collecte$Latitude <- as.numeric(collecte$Latitude)
 collecte$Temp_actu <- as.numeric(collecte$Temp_actu)
 collecte$Temp_max <- as.numeric(collecte$Temp_max)
 collecte$Temp_min <- as.numeric(collecte$Temp_min)
-head(collecte, 9)
 collecte <- as_tibble(rownames_to_column(collecte))
+head(collecte, 10)
