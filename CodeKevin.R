@@ -55,7 +55,7 @@ table_name <- c("esperance-de-vie","mortalite-infantile","ipe","mortalite","tour
 
 #Application de la fonction de collecte de donnees depuis le site pour actualiser les information de la premiere df
 for(i in table_name)
-  information.pays <- merge(information.pays,collecte.Data(i),by.x = "Pays", by.y = "Pays", all = TRUE)
+  information.pays <- merge(information.pays,collecte.Data(i,session2),by.x = "Pays", by.y = "Pays", all = TRUE)
 
 #Renommer les colonnes de information.pays
 colnames(information.pays) <- c("Pays","Continent","Esperance_vie","Mortalite_inf","Indice_perf_env","Mortalite",
@@ -71,7 +71,7 @@ capitals_2 <- str_to_upper(delete.accent(jeretiens %>% html_nodes("tr+ tr td:nth
 pays_2 <- str_to_upper(delete.accent(jeretiens %>% html_nodes("tr+ tr td:nth-child(1)") %>% html_text()))
 
 #Remplacement du nom de certains pays pour assurer une certaine concordance lors de la jointure
-v1 <- c("BIELORUSSIE","BIRMANIE","BOSNIE-HERZEGOVINE","GRENADE (ILES DE LA)","ILE MAURICE","ILES COOK","MACEDOINE","MARSHALL (ILES)","REPUBLIQUE TCHEQUE","SAINT-KITTS-ET-NEVIS","SAO TOME ET PRINCIPE","SWAZILAND","TIMOR-ORIENTAL")
+v1 <- c("BIELORUSSIE","BIRMANIE","BOSNIE-HERZEGOVINE","GRENADE (ILES DE LA)","ILE MAURICE","ILES COOK","MACEDOINE","MARSHALL (ILES)","REPUBLIQUE TCHEQUE","SAINT-KITTS-ET-NEVIS","SÃO TOME ET PRINCIPE","SWAZILAND","TIMOR-ORIENTAL")
 v2 <- c("BELARUS (BIELORUSSIE)","MYANMAR (BIRMANIE)","BOSNIE-ET-HERZEGOVINE","GRENADE","MAURICE","COOK","MACEDOINE DU NORD","MARSHALL","TCHEQUIE","SAINT-CHRISTOPHE-ET-NIEVES","SAO TOME-ET-PRINCIPE","ESWATINI (SWAZILAND)","TIMOR ORIENTAL")
 pays_2 <- remplacer.nom.pays(v1,v2,pays_2)
 pays_2[163] <- "SEYCHELLES"
@@ -148,6 +148,7 @@ colnames(collecte.api) <- c("Capitals","Longitude","Latitude","Temp_actu","Temp_
 collecte <- merge(collecte,collecte.api, by.x="Capitals", by.y ="Capitals", all = TRUE)
 #Renommage des differentes ligne de notre df finale et suppression de la colonne pays
 rownames(collecte) <- collecte$Pays
+collecte$Pays <- NULL
 collecte$Type_temps <- as.factor(collecte$Type_temps)
 collecte$Humidity <- as.numeric(collecte$Humidity)
 collecte$Longitude <- as.numeric(collecte$Longitude)
